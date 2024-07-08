@@ -71,8 +71,11 @@ window_handles = driver.window_handles
 # 팝업 창으로 전환 (기본적으로 두 번째 창이 팝업 창이므로 인덱스 1 사용)
 driver.switch_to.window(window_handles[1])
 
-#같은 경로에있는 csv파일을 읽어서 데이터 가져오기
-data = pd.read_csv('경비청구 폼.csv')  
+# 엑셀 파일 경로
+file_path = r'C:\Users\admin\Desktop\김동환\Worksapce\Selenium\경비청구 자동화\경비청구 폼.xlsx'
+
+# 엑셀 파일 읽어오기
+data = pd.read_excel(file_path)
 
 #데이터를 1개의 list에 담기
 listdata = []

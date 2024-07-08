@@ -50,12 +50,27 @@ time.sleep(1)
 유지보수_일정관리.click()
 
 #같은 경로에있는 csv파일을 읽어서 데이터 가져오기
-data = pd.read_csv('C:/Users/admin/Desktop/김동환/Worksapce/Selenium/일정등록 자동화/일정등록 폼.csv')  
+data = pd.read_excel('C:/Users/admin/Desktop/김동환/Worksapce/Selenium/일정등록 자동화/일정등록 폼.xlsx')  
+
 
 #데이터를 1개의 list에 담기
 listdata = []
 for i, row in data.iterrows():
-    listdata.append([row['시작일자'], row['시작시'],row['시작분'],row['종료시'],row['종료분'],row['방문목적'],row['지원사이트'],row['유지보수구분'],row['문제점'],row['조치방법'],row['조치결과'],row['업체담당자']])
+    listdata.append([
+        row['시작일자'] if pd.notna(row['시작일자']) else '',
+        f"{row['시작시']:02}" if pd.notna(row['시작시']) else '',  # 2자리로 포맷팅
+        f"{row['시작분']:02}" if pd.notna(row['시작분']) else '',  # 2자리로 포맷팅
+        f"{row['종료시']:02}" if pd.notna(row['종료시']) else '',  # 2자리로 포맷팅
+        f"{row['종료분']:02}" if pd.notna(row['종료분']) else '',  # 2자리로 포맷팅
+        row['방문목적'] if pd.notna(row['방문목적']) else '',
+        row['지원사이트'] if pd.notna(row['지원사이트']) else '',
+        row['유지보수구분'] if pd.notna(row['유지보수구분']) else '',
+        row['문제점'] if pd.notna(row['문제점']) else '',
+        row['조치방법'] if pd.notna(row['조치방법']) else '',
+        row['조치결과'] if pd.notna(row['조치결과']) else '',
+        row['업체담당자'] if pd.notna(row['업체담당자']) else ''
+    ])
+
 
 print("STPE 2 : 경비청구 자동 입력 시작 !!")
 
@@ -88,13 +103,13 @@ for i in range(data['시작일자'].count()):
     time.sleep(0.5)
     시작시 = driver.find_element(By.NAME, "pmStartHour")
     driver.execute_script("arguments[0].setAttribute('value', arguments[1])", 시작시, listdata[i][1])
-    time.sleep(0.5)
+    time.sleep(1)
     시작분 = driver.find_element(By.NAME, "pmStartMin")
     driver.execute_script("arguments[0].setAttribute('value', arguments[1])", 시작분, listdata[i][2])
     time.sleep(0.5)
     종료시 = driver.find_element(By.NAME, "pmEndHour")
     driver.execute_script("arguments[0].setAttribute('value', arguments[1])", 종료시, listdata[i][3])
-    time.sleep(0.5)
+    time.sleep(1)
     종료분 = driver.find_element(By.NAME, "pmEndMin")
     driver.execute_script("arguments[0].setAttribute('value', arguments[1])", 종료분, listdata[i][4])
 
@@ -103,15 +118,48 @@ for i in range(data['시작일자'].count()):
     방문목적 = driver.find_element(By.NAME, "pmTitle")
     방문목적.send_keys(listdata[i][5])
 
-    #4 지원 사이트 팝업이생성되는 사이트일때 처리##################################
-    time.sleep(1.5)
-    지원사이트 = driver.find_element(By.NAME, "pmSiteNm")
-    지원사이트.send_keys(listdata[i][6])
+    #4 지원 사이트 
+
+    #팝업이 생기는 사이트
+    popup_site_list = ["데이터스트림즈"]
+
+    #팝업이 생기는 사이트 처리
+    if listdata[i][6] in popup_site_list:
+        time.sleep(1.5)
+        지원사이트 = driver.find_element(By.NAME, "pmSiteNm")
+        지원사이트.send_keys(listdata[i][6])
+        지원사이트.send_keys(Keys.ENTER)
+        time.sleep(1.5)
+
+        window_handles = driver.window_handles
+        driver.switch_to.window(window_handles[2])
+
+        time.sleep(1.5)
+        지원사이트_팝업 = driver.find_element(By.LINK_TEXT, listdata[i][6])
+        지원사이트_팝업.click()
+        time.sleep(1.5)
+        driver.switch_to.window(window_handles[1])
+    else:
+        time.sleep(1.5)
+        지원사이트 = driver.find_element(By.NAME, "pmSiteNm")
+        지원사이트.send_keys(listdata[i][6])
 
     #5 사업부
     time.sleep(1.5)
     사업부 = driver.find_element(By.NAME, "pmCmpDept")
     사업부.send_keys(listdata[i][6])
+
+    #팝업이 생기는 사이트일때 팝업이 또나오는거 닫기
+    if listdata[i][6] in popup_site_list:
+        time.sleep(1.5)
+        window_handles = driver.window_handles
+        driver.switch_to.window(window_handles[2])
+
+        time.sleep(1.5)
+        지원사이트_팝업 = driver.find_element(By.LINK_TEXT, listdata[i][6])
+        지원사이트_팝업.click()
+        time.sleep(1.5)
+        driver.switch_to.window(window_handles[1])
 
     #6 유지보수 구분
     time.sleep(1.5)
@@ -121,7 +169,7 @@ for i in range(data['시작일자'].count()):
     elif listdata[i][7] == "0":
         pass
     else:
-        for _ in range(listdata[i][7]):
+        for _ in range(int(listdata[i][7])):
             유지보수구분.send_keys(Keys.ARROW_DOWN)
     
     #7. 처리 담당자

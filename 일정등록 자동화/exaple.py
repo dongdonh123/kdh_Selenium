@@ -1,37 +1,27 @@
 import pandas as pd
+import pprint
 
-data = pd.read_csv('경비청구 폼.csv')  #csv파일을 읽겠다
-# print(data) #출력하기
+#같은 경로에있는 csv파일을 읽어서 데이터 가져오기
+data = pd.read_excel('C:/Users/admin/Desktop/김동환/Worksapce/Selenium/일정등록 자동화/일정등록 폼.xlsx')  
 
-# print(data['날짜(YYYY-MM-DD)']) #첫번째열만 출력
-print(data['날짜(YYYY-MM-DD)'].count()) #첫번째열 개수 출력 (총 반복횟수 확인)
 
-##리스트를 각각 만들기
-###############################################
-
-# 번호 = data['번호'].values
-
-# 날짜 = data['날짜(YYYY-MM-DD)'].values
-
-# 계정항목 = data['계정항목'].values
-
-# 사용금액 = data['사용금액'].values
-
-# 사용내역 = data['사용내역'].values
-
-###########################################
-
-#한꺼번에 담기
+#데이터를 1개의 list에 담기
 listdata = []
 for i, row in data.iterrows():
-    listdata.append([row['날짜(YYYY-MM-DD)'], row['계정항목'],row['사용금액'],row['사용내역']])
+    listdata.append([
+        row['시작일자'] if pd.notna(row['시작일자']) else '',
+        f"{row['시작시']:02}" if pd.notna(row['시작시']) else '',  # 2자리로 포맷팅
+        f"{row['시작분']:02}" if pd.notna(row['시작분']) else '',  # 2자리로 포맷팅
+        f"{row['종료시']:02}" if pd.notna(row['종료시']) else '',  # 2자리로 포맷팅
+        f"{row['종료분']:02}" if pd.notna(row['종료분']) else '',  # 2자리로 포맷팅
+        row['방문목적'] if pd.notna(row['방문목적']) else '',
+        row['지원사이트'] if pd.notna(row['지원사이트']) else '',
+        row['유지보수구분'] if pd.notna(row['유지보수구분']) else '',
+        row['문제점'] if pd.notna(row['문제점']) else '',
+        row['조치방법'] if pd.notna(row['조치방법']) else '',
+        row['조치결과'] if pd.notna(row['조치결과']) else '',
+        row['업체담당자'] if pd.notna(row['업체담당자']) else ''
+    ])
 
-# print(listdata)
-
-# print("0번째" +listdata[0][0])
-
-
-for i in range(8): 
-    print(listdata[i])
-    for j in range(4):
-        print(listdata[i][j])
+pprint.pprint(listdata)
+exit()
